@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "header.h"
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -172,19 +173,38 @@ int menuJogo()
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, RED);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
+        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
     }
     else if(opc_menu_jogo == 2)
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, RED);
+        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
     }
+    else if(opc_menu_jogo == 3)
+    {
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
+        DrawText(TextFormat("Snake"), 50, 580, 30, RED);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
+    }
+    else if(opc_menu_jogo == 4)
+    {
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
+        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, RED);
+    }
+
 
     if(IsKeyPressed(KEY_DOWN))
     {
         opc_menu_jogo++;
-        if(opc_menu_jogo > 2)
+        if(opc_menu_jogo > 1)
         {
-            opc_menu_jogo = 2;
+            opc_menu_jogo = 1;
         }
     }
     else if(IsKeyPressed(KEY_UP))
@@ -428,6 +448,11 @@ int main()
             {
                 /* Flappy Bird */
                 flappyBird(tela, &personagem, obstaculos, &ambiente, &menu_opc, scoreboard, &opc_jogo);
+            }
+            else if(opc_jogo == 2)
+            {
+                /* Asteroids */
+                // mainAsteroids();
             }
         }
         else if(menu_opc == 2)
