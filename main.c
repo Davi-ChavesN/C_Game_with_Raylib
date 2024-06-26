@@ -36,6 +36,12 @@ typedef struct Character
     int width;
     int height;
     float radius;
+    int lives;
+    int speed;
+    int start;
+    int moving;
+    int facing_up_down;
+    int facing_right_left;
 }Character;
 
 typedef struct Enviroment
@@ -202,9 +208,9 @@ int menuJogo()
     if(IsKeyPressed(KEY_DOWN))
     {
         opc_menu_jogo++;
-        if(opc_menu_jogo > 1)
+        if(opc_menu_jogo > 4)
         {
-            opc_menu_jogo = 1;
+            opc_menu_jogo = 4;
         }
     }
     else if(IsKeyPressed(KEY_UP))
@@ -279,24 +285,34 @@ void flappyBird(Screen tela, Character *personagem, List *obstaculos, Enviroment
         if(((Obstacle*)aux->info)->x < 0)
         {
             ((Obstacle*)aux->info)->x += 2080;
-            if(((Obstacle*)aux->info)->paridade%2 != 0)
+            if(((Obstacle*)aux->info)->paridade%2 == 0)
             {
                 up_down_value = rand()%100;
                 rng = rand()% 3;
                 if(rng == 1)
                 {                
-                    if(((Obstacle*)aux->info)->y + ((Obstacle*)aux->info)->height < tela.height/2)
+                    if(((Obstacle*)aux->info)->y >= 220)
                     {
                         ((Obstacle*)aux->info)->y -= up_down_value;
-                        ((Obstacle*)aux->next->info)->y -= up_down_value;
+                        ((Obstacle*)aux->prev->info)->y -= up_down_value;
+                        if(((Obstacle*)aux->info)->y < 220)
+                        {
+                            ((Obstacle*)aux->info)->y = 220;
+                            ((Obstacle*)aux->prev->info)->y = ((Obstacle*)aux->info)->y - ((Obstacle*)aux->info)->height - 160;
+                        }
                     }
                 }
                 else if(rng == 2)
                 {
-                    if(((Obstacle*)aux->info)->y + ((Obstacle*)aux->info)->height > tela.height/2)
+                    if(((Obstacle*)aux->info)->y <= 520)
                     {
                         ((Obstacle*)aux->info)->y += up_down_value;
-                        ((Obstacle*)aux->next->info)->y += up_down_value;
+                        ((Obstacle*)aux->prev->info)->y += up_down_value;
+                        if(((Obstacle*)aux->info)->y > 520)
+                        {
+                            ((Obstacle*)aux->info)->y = 520;
+                            ((Obstacle*)aux->prev->info)->y = ((Obstacle*)aux->info)->y - ((Obstacle*)aux->info)->height - 160;
+                        }
                     }
                 }
             }
@@ -347,6 +363,121 @@ void flappyBird(Screen tela, Character *personagem, List *obstaculos, Enviroment
     DrawText(TextFormat("High Score: %d", highest), 10, 40, 30, BLACK);
 }
 
+void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen tela, Character *ball)
+{
+    if(personagem->start == 1)
+    {
+        // resetBlocks();
+        personagem->y = 650;
+        ball->x = personagem->x + personagem->width/2;
+        ball->y = personagem->y - personagem->height;
+        ball->moving = 0;
+        ball->facing_up_down = 1;
+        ball->facing_right_left = 1;
+        personagem->start = 0;
+    }
+
+    /*
+        1 = Up
+        2 = Down
+        1 = Right
+        2 = Left
+    */
+
+    if(ball->moving == 1)
+    {
+        if(ball->facing_up_down == 1)
+        {
+            ball->y -= ball->speed;
+        }
+        else if(ball->facing_up_down == 2)
+        {
+            ball->y += ball->speed;
+        }
+
+        if(ball->facing_right_left == 1)
+        {
+            ball->x += ball->speed;
+        }
+        else if(ball->facing_right_left == 2)
+        {
+            ball->x -= ball->speed;
+        }
+
+        if(ball->x <= 0)
+        {
+            ball->facing_right_left = 1;
+        }
+        else if(ball->x >= tela.width)
+        {
+            ball->facing_right_left = 2;
+        }
+
+        if(ball->y <= 0)
+        {
+            ball->facing_up_down = 2;
+        }
+        else if(ball->y >= tela.height)
+        {
+            ball->moving = 0;
+            ball->x = personagem->x + personagem->width/2;
+            ball->y = personagem->y - personagem->height;
+        }
+    }
+
+      
+
+    if(IsKeyDown(KEY_RIGHT))
+    {
+        personagem->x += personagem->speed;
+        if(ball->moving == 0)
+        {
+            ball->x += personagem->speed;
+        }
+    }
+    else if(IsKeyDown(KEY_LEFT))
+    {
+        personagem->x -= personagem->speed;
+        if(ball->moving == 0)
+        {
+            ball->x -= personagem->speed;
+        }
+    }
+
+    if(personagem->x <= 0)
+    {
+        personagem->x = 0;
+        if(ball->moving == 0)
+        {
+            ball->x = personagem->x + personagem->width/2;
+        }
+    }
+    else if(personagem->x + personagem->width > tela.width)
+    {
+        personagem->x = tela.width - personagem->width;
+        if(ball->moving == 0)
+        {
+            ball->x = personagem->x + personagem->width/2;
+        }
+    }
+
+    if(IsKeyPressed(KEY_SPACE) && ball->moving == 0)
+    {
+        ball->moving = 1;
+    }
+
+    if(personagem->lives == 0)
+    {
+        personagem->lives = 3;
+        *menu_opc = 0;
+        *opc_jogo = 0;
+        // resetBlockBreaker();
+    }
+
+    DrawRectangle(personagem->x, personagem->y, personagem->width, personagem->height, BLACK);
+    DrawCircle(ball->x, ball->y, ball->radius, RED);
+}
+
 
 /* Código Principal */
 int main()
@@ -359,9 +490,19 @@ int main()
     Character personagem = {
         .x = tela.width/2 - 250,
         .y = tela.height/2,
-        .width = 50,
-        .height = 50,
+        .width = 100,
+        .height = 10,
         .radius = 25,
+        .lives = 3,
+        .speed = 10,
+        .start = 1,
+    };
+
+    Character ball = {
+        .radius = 10,
+        .x = 0,
+        .y = 0,
+        .speed = 5,
     };
 
     Enviroment ambiente = {
@@ -422,6 +563,11 @@ int main()
     obs6->paridade = 2;
     addEndList(obstaculos, (void*)obs6);
 
+    Image logo_iftm = LoadImage("assets/logoIFTM.png");
+    ImageResize(&logo_iftm, 200, 200);
+    Texture2D texture = LoadTextureFromImage(logo_iftm);
+    UnloadImage(logo_iftm);
+
     srand(time(NULL));
     int games[5];
     int menu_opc = 0;
@@ -435,6 +581,7 @@ int main()
 
         if(menu_opc == 0)
         {
+            DrawTexture(texture, 10, 10, RAYWHITE);
             menu_opc = menu();
         }
 
@@ -453,6 +600,15 @@ int main()
             {
                 /* Asteroids */
                 // mainAsteroids();
+            }
+            else if(opc_jogo == 3)
+            {
+                /* Snake */
+            }
+            else if(opc_jogo == 4)
+            {
+                /* Block Breaker */
+                blockBreaker(&menu_opc, &opc_jogo, &personagem, tela, &ball);
             }
         }
         else if(menu_opc == 2)
