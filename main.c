@@ -34,6 +34,7 @@ typedef struct Character
     int x;
     int y;
     int width;
+    
     int height;
     float radius;
     int vidas;
@@ -79,11 +80,21 @@ typedef struct Block
     int alive;
 }Block;
 
+typedef struct Vehicle
+{
+    int width;
+    int height;
+    int x;
+    int y;
+    int speed;
+}Vehicle;
+
 
 int opc_menu = 1;
 int opc_menu_jogo = 1;
 int pontuacao = 0;
 int speed_up = 0;
+int cont = 0;
 int highest = 0;
 int qtd_blocos = 80;
 /* Funções */
@@ -522,7 +533,7 @@ bool checkBallBlock(Character *ball, Node *aux, int *total_blocos, Character *pe
     }
 }
 
-void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen tela, Character *ball, List *blocos, int *total_blocos)
+void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen tela, Character *ball, List *blocos, int *total_blocos, List *scoreboard)
 {
     Node *aux = blocos->start;
 
@@ -653,6 +664,9 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
         personagem->start = 1;
         *menu_opc = 0;
         *opc_jogo = 0;
+        Scoreboard *novo = (Scoreboard*)malloc(sizeof(Scoreboard));
+        novo->score = personagem->pontos;
+        addEndList(scoreboard, novo);
     }
 
     int blocos_vivos = 0;
@@ -677,6 +691,244 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
 }
 
 /* Racing */
+void createLines(List *lines)
+{
+    int posX = 30;
+    int qtd = 1;
+    for(int i = 0; i < 20; i++)
+    {
+        Vehicle *line = (Vehicle*)malloc(sizeof(Vehicle));
+        line->height = 30;
+        line->width = 90;
+        line->x = posX;
+        line->speed = 3;
+
+        addEndList(lines, (void*)line);
+
+        if(qtd%2 == 0)
+        {
+            posX += 140;
+        }
+        qtd++;
+    }
+}
+
+void createVeiculos(List *veiculos)
+{
+    int posX = 1280;
+    int rng;
+    for(int i = 0; i < 7; i++)
+    {
+        Vehicle *veiculo = (Vehicle*)malloc(sizeof(Vehicle));
+        veiculo->height = 50;
+        veiculo->width = 90;
+        veiculo->x = posX;
+        veiculo->speed = 10;
+        
+        rng = rand()%3 + 1;
+        if(rng == 1)
+        {
+            veiculo->y = 210;
+        }
+        else if(rng == 2)
+        {
+            veiculo->y = 350;
+        }
+        else if(rng == 3)
+        {
+            veiculo->y = 490;
+        }
+
+        addEndList(veiculos, (void*)veiculo);
+        posX += 250;
+    }
+}
+
+bool checkCarCrash(Vehicle *carro, Node *aux)
+{
+    Rectangle rec1 = {
+        .height = carro->height,
+        .width = carro->width,
+        .x = carro->x,
+        .y = carro->y,
+    };
+    Rectangle rec2 = {
+        .height = ((Vehicle*)aux->info)->height,
+        .width = ((Vehicle*)aux->info)->width,
+        .x = ((Vehicle*)aux->info)->x,
+        .y = ((Vehicle*)aux->info)->y,        
+    };
+
+    CheckCollisionRecs(rec1, rec2);
+}
+
+void resetVeiculos(List *veiculos)
+{
+    int posX = 1280;
+    int rng;
+    Node *aux = veiculos->start;
+    while(aux != NULL)
+    {
+        ((Vehicle*)aux->info)->x = posX;
+        
+        rng = rand()%3 + 1;
+        if(rng == 1)
+        {
+            ((Vehicle*)aux->info)->y = 210;
+        }
+        else if(rng == 2)
+        {
+            ((Vehicle*)aux->info)->y = 350;
+        }
+        else if(rng == 3)
+        {
+            ((Vehicle*)aux->info)->y = 490;
+        }
+
+        posX += 250;
+        aux = aux->next;
+    }
+}
+
+void racing(List *veiculos, Vehicle *carro, Screen tela, int *menu_opc, int *opc_jogo, List *scoreboard, Enviroment *ambiente, List *lines)
+{
+    if(IsKeyPressed(KEY_UP))
+    {
+        if(carro->y > 210)
+        {
+            carro->y -= 140;
+        }
+    }
+    if(IsKeyPressed(KEY_DOWN))
+    {
+        if(carro->y < 490)
+        {
+            carro->y += 140;
+        }
+    }
+    if(IsKeyDown(KEY_RIGHT))
+    {
+        carro->x += carro->speed;
+        if(carro->x >= tela.width)
+        {
+            carro->x = tela.width - carro->width;
+        }
+    }
+    if(IsKeyDown(KEY_LEFT))
+    {
+        carro->x -= carro->speed;
+        if(carro->x <= 0)
+        {
+            carro->x = 0;
+        }
+    }
+
+    /*
+        Lanes
+        1 = 210
+        2 = 350
+        3 = 490
+    */
+    int rng;
+    Node *aux = veiculos->start;
+    while(aux != NULL)
+    {
+        ((Vehicle*)aux->info)->x -= ((Vehicle*)aux->info)->speed;
+
+        rng = rand()%3 + 1;
+        if(((Vehicle*)aux->info)->x + ((Vehicle*)aux->info)->width <= 0)
+        {
+            if(rng == 1)
+            {
+                ((Vehicle*)aux->info)->y = 210;
+            }
+            else if(rng == 2)
+            {
+                ((Vehicle*)aux->info)->y = 350;
+            }
+            else if(rng == 3)
+            {
+                ((Vehicle*)aux->info)->y = 490;
+            }
+            ((Vehicle*)aux->info)->x = 1440;
+        }
+        
+        DrawRectangle(
+            ((Vehicle*)aux->info)->x,
+            ((Vehicle*)aux->info)->y,
+            ((Vehicle*)aux->info)->width,
+            ((Vehicle*)aux->info)->height,
+            DARKGREEN);
+
+        if(checkCarCrash(carro, aux))
+        {
+            *menu_opc = 0;
+            *opc_jogo = 0;
+            carro->x = 70;
+            carro->y = 350;
+            resetVeiculos(veiculos);
+
+            Scoreboard *novo = (Scoreboard*)malloc(sizeof(Scoreboard));
+            novo->score = pontuacao;
+            addEndList(scoreboard, novo);
+
+            cont = 0;
+            pontuacao = 0;
+        }
+        else
+        {
+            cont += ambiente->speed;
+            if(cont == 500)
+            {
+                cont = 0;
+                pontuacao++;
+            }
+        }
+
+        aux = aux->next;
+    }    
+
+    DrawRectangle(
+        carro->x,
+        carro->y,
+        carro->width,
+        carro->height,
+        RED);
+    DrawRectangle(0, 150, 1280, 30, BLACK);
+    DrawRectangle(0, 570, 1280, 30, BLACK);
+    
+    Node *aux_line = lines->start;
+    while(aux_line != NULL)
+    {
+        DrawRectangle(
+            ((Vehicle*)aux_line->info)->x,
+            290,
+            ((Vehicle*)aux_line->info)->width,
+            ((Vehicle*)aux_line->info)->height,
+            GOLD);
+        ((Vehicle*)aux_line->info)->x -= ((Vehicle*)aux_line->info)->speed;
+        if(((Vehicle*)aux_line->info)->x + ((Vehicle*)aux_line->info)->width <= 0)
+        {
+            ((Vehicle*)aux_line->info)->x = tela.width + 30;
+        }
+
+        aux_line = aux_line->next;
+        DrawRectangle(
+            ((Vehicle*)aux_line->info)->x,
+            430,
+            ((Vehicle*)aux_line->info)->width,
+            ((Vehicle*)aux_line->info)->height,
+            GOLD);
+        ((Vehicle*)aux_line->info)->x -= ((Vehicle*)aux_line->info)->speed;
+        if(((Vehicle*)aux_line->info)->x + ((Vehicle*)aux_line->info)->width <= 0)
+        {
+            ((Vehicle*)aux_line->info)->x = tela.width + 30;
+        }
+
+        aux_line = aux_line->next;
+    }
+    DrawText(TextFormat("Pontuação: %d", pontuacao), 10, 10, 30, BLACK);
+}
 
 
 /* Código Principal */
@@ -712,12 +964,25 @@ int main()
         .speed = 5,
     };
 
+    Vehicle carrinho = {
+        .height = 50,
+        .width = 70,
+        .x = 70,
+        .y = 350,
+        .speed = 5,
+    };
+
     InitWindow(tela.width, tela.height, "Arcade");
     SetTargetFPS(60);
 
     List *scoreboard = createList();
     List *obstaculos = createList();
     List *blocos = createList();
+    List *veiculos = createList();
+    List *lines = createList();
+
+    createLines(lines);
+
     Obstacle *obs1 = (Obstacle*)malloc(sizeof(Obstacle));
     obs1->height = 360;
     obs1->width = 50;
@@ -767,6 +1032,7 @@ int main()
     addEndList(obstaculos, (void*)obs6);
 
     createBlocks(blocos);
+    createVeiculos(veiculos);
 
     Image logo_iftm = LoadImage("assets/logoIFTM.png");
     ImageResize(&logo_iftm, 200, 200);
@@ -810,11 +1076,12 @@ int main()
             else if(opc_jogo == 3)
             {
                 /* Racing */
+                racing(veiculos, &carrinho, tela, &menu_opc, &opc_jogo, scoreboard, &ambiente, lines);
             }
             else if(opc_jogo == 4)
             {
                 /* Block Breaker */
-                blockBreaker(&menu_opc, &opc_jogo, &personagem, tela, &ball, blocos, &total_blocos);
+                blockBreaker(&menu_opc, &opc_jogo, &personagem, tela, &ball, blocos, &total_blocos, scoreboard);
             }
         }
         else if(menu_opc == 2)
