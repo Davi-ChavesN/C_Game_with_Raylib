@@ -372,6 +372,7 @@ void flappyBird(Screen tela, Character *personagem, List *obstaculos, Enviroment
             // fflush(stdin);
             // scanf("%s", &novo->nome);
             novo->score = pontuacao;
+            strcpy(novo->nome, "Flappy Bird");
             addEndList(scoreboard, novo);
             
             *menu_opc = 0;
@@ -541,7 +542,6 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
     {
         resetBlocks(blocos, tela);
         *total_blocos = qtd_blocos;
-        personagem->speedX = 0;
         personagem->speedX = 5;
         personagem->vidas = 3;
         personagem->y = 650;
@@ -666,6 +666,7 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
         *opc_jogo = 0;
         Scoreboard *novo = (Scoreboard*)malloc(sizeof(Scoreboard));
         novo->score = personagem->pontos;
+        strcpy(novo->nome, "Block Breaker");
         addEndList(scoreboard, novo);
     }
 
@@ -870,6 +871,7 @@ void racing(List *veiculos, Vehicle *carro, Screen tela, int *menu_opc, int *opc
 
             Scoreboard *novo = (Scoreboard*)malloc(sizeof(Scoreboard));
             novo->score = pontuacao;
+            strcpy(novo->nome, "Racing");
             addEndList(scoreboard, novo);
 
             cont = 0;
@@ -956,7 +958,7 @@ int main()
         .y = 0,
         .speed = 5,
         .speedX = 5,
-        .speedY = 5,
+        .speedY = 10,
     };
 
     Enviroment ambiente = {
@@ -1092,7 +1094,7 @@ int main()
 
             while(aux != NULL)
             {   
-                DrawText(TextFormat("Player - %d", ((Scoreboard*)aux->info)->score), 10, posy, 30, BLACK);
+                DrawText(TextFormat("Player - %s: %d", ((Scoreboard*)aux->info)->nome, ((Scoreboard*)aux->info)->score), 10, posy, 30, BLACK);
 
                 aux = aux->next;
                 posy += 40;
