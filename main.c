@@ -36,12 +36,15 @@ typedef struct Character
     int width;
     int height;
     float radius;
-    int lives;
+    int vidas;
     int speed;
+    float speedX;
+    float speedY;
     int start;
     int moving;
     int facing_up_down;
     int facing_right_left;
+    int pontos;
 }Character;
 
 typedef struct Enviroment
@@ -66,12 +69,23 @@ typedef struct Scoreboard
     char jogo[50];
 }Scoreboard;
 
+typedef struct Block
+{
+    int width;
+    int height;
+    int x;
+    int y;
+    int vidas;
+    int alive;
+}Block;
+
 
 int opc_menu = 1;
 int opc_menu_jogo = 1;
 int pontuacao = 0;
 int speed_up = 0;
 int highest = 0;
+int qtd_blocos = 80;
 /* Funções */
 List* createList()
 {
@@ -102,6 +116,21 @@ void addEndList(List *lista, void* info)
         lista->end->next = novo;
         novo->prev = lista->end;
         lista->end = novo;
+    }
+}
+
+void createBlocks(List *blocos)
+{
+    for(int i = 0; i < qtd_blocos; i++)
+    {
+        Block *bloco = (Block*)malloc(sizeof(Block));
+        bloco->height = 30;
+        bloco->width = 60;
+        bloco->x = 0;
+        bloco->y = 0;
+        bloco->vidas = 3;
+
+        addEndList(blocos, (void*)bloco);
     }
 }
 
@@ -179,28 +208,28 @@ int menuJogo()
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, RED);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
         DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
     }
     else if(opc_menu_jogo == 2)
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, RED);
-        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
         DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
     }
     else if(opc_menu_jogo == 3)
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Snake"), 50, 580, 30, RED);
+        DrawText(TextFormat("Racing"), 50, 580, 30, RED);
         DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
     }
     else if(opc_menu_jogo == 4)
     {
         DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
         DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Snake"), 50, 580, 30, BLACK);
+        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
         DrawText(TextFormat("Block Breaker"), 50, 620, 30, RED);
     }
 
@@ -234,6 +263,7 @@ int menuJogo()
     return choice;
 }
 
+/* Flappy Bird */
 bool checkCollision(Character personagem, Rectangle rec)
 {
     Vector2 vec = {
@@ -363,12 +393,148 @@ void flappyBird(Screen tela, Character *personagem, List *obstaculos, Enviroment
     DrawText(TextFormat("High Score: %d", highest), 10, 40, 30, BLACK);
 }
 
-void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen tela, Character *ball)
+/* Block Breaker */
+resetBlocks(List *blocos, Screen tela)
 {
+    Node *aux = blocos->start;
+    int posX = 10;
+    int posY = 70;
+    for(int i = 0; i < qtd_blocos; i++)
+    {
+        ((Block*)aux->info)->x = posX;
+        ((Block*)aux->info)->y = posY;
+        ((Block*)aux->info)->vidas = 1;
+        ((Block*)aux->info)->alive = 1;
+        if(posX + ((Block*)aux->info)->width + 63 < tela.width)
+        {
+            posX += 63;
+        }
+        else
+        {
+            posX = 10;
+            posY += 32;
+        }
+        aux = aux->next;
+    }
+}
+
+bool checkBallPlayer(Character *personagem, Character *ball)
+{
+    Vector2 vec = {
+        .x = ball->x,
+        .y = ball->y,
+    };
+
+    Rectangle rec = {
+        .height = personagem->height,
+        .width = personagem->width,
+        .x = personagem->x,
+        .y = personagem->y,
+    };
+
+    if(ball->x <= personagem->width*0.3)
+    {
+        ball->speedX = 5*0.3;
+    }
+    else if(ball->x > personagem->width*0.3 && ball->x < personagem->width*0.45 )
+    {
+        ball->speedX = 5*0.7;
+    }
+    else if(ball->x >= personagem->width*0.45 && ball->x <= personagem->width*0.55 )
+    {
+        ball->speedX = 5;
+    }
+    else if(ball->x > personagem->width*0.55 && ball->x < personagem->width*0.7 )
+    {
+        ball->speedX = 5*0.7;
+    }
+    else if(ball->x >= personagem->width*0.7)
+    {
+        ball->speedX = 5*0.3;
+    }
+    CheckCollisionCircleRec(vec, ball->radius, rec);
+}
+
+bool checkBallBlock(Character *ball, Node *aux, int *total_blocos, Character *personagem)
+{
+    Vector2 vec = {
+        .x = ball->x,
+        .y = ball->y,
+    };
+
+    Rectangle rec1 = {
+        .height = 0,
+        .width = ((Block*)aux->info)->width,
+        .x = ((Block*)aux->info)->x,
+        .y = ((Block*)aux->info)->y,
+    };
+    if(CheckCollisionCircleRec(vec, ball->radius, rec1))
+    {
+        ball->facing_up_down = 1;
+        ((Block*)aux->info)->vidas--;
+    }
+
+    Rectangle rec2 = {
+        .height = 0,
+        .width = ((Block*)aux->info)->width,
+        .x = ((Block*)aux->info)->x,
+        .y = ((Block*)aux->info)->y + ((Block*)aux->info)->height,
+    };
+    if(CheckCollisionCircleRec(vec, ball->radius, rec2))
+    {
+        ball->facing_up_down = 2;
+        ((Block*)aux->info)->vidas--;
+    }
+
+    Rectangle rec3 = {
+        .height = ((Block*)aux->info)->height,
+        .width = 0,
+        .x = ((Block*)aux->info)->x + ((Block*)aux->info)->width,
+        .y = ((Block*)aux->info)->y,
+    };
+    if(CheckCollisionCircleRec(vec, ball->radius, rec3))
+    {
+        ball->facing_right_left = 1;
+        ((Block*)aux->info)->vidas--;
+    }
+
+    Rectangle rec4 = {
+        .height = ((Block*)aux->info)->height,
+        .width = 0,
+        .x = ((Block*)aux->info)->x,
+        .y = ((Block*)aux->info)->y,
+    };
+    if(CheckCollisionCircleRec(vec, ball->radius, rec4))
+    {
+        ball->facing_right_left = 2;
+        ((Block*)aux->info)->vidas--;
+    }
+
+    if(((Block*)aux->info)->vidas == 0)
+    {
+        ((Block*)aux->info)->y = -100;
+        if(((Block*)aux->info)->alive == 1)
+        {
+            total_blocos--;
+            personagem->pontos += 1;
+            ((Block*)aux->info)->alive = 0;
+        }
+    }
+}
+
+void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen tela, Character *ball, List *blocos, int *total_blocos)
+{
+    Node *aux = blocos->start;
+
     if(personagem->start == 1)
     {
-        // resetBlocks();
+        resetBlocks(blocos, tela);
+        *total_blocos = qtd_blocos;
+        personagem->speedX = 0;
+        personagem->speedX = 5;
+        personagem->vidas = 3;
         personagem->y = 650;
+        personagem->pontos = 0;
         ball->x = personagem->x + personagem->width/2;
         ball->y = personagem->y - personagem->height;
         ball->moving = 0;
@@ -388,20 +554,20 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
     {
         if(ball->facing_up_down == 1)
         {
-            ball->y -= ball->speed;
+            ball->y -= ball->speedY;
         }
         else if(ball->facing_up_down == 2)
         {
-            ball->y += ball->speed;
+            ball->y += ball->speedY;
         }
 
         if(ball->facing_right_left == 1)
         {
-            ball->x += ball->speed;
+            ball->x += ball->speedX;
         }
         else if(ball->facing_right_left == 2)
         {
-            ball->x -= ball->speed;
+            ball->x -= ball->speedX;
         }
 
         if(ball->x <= 0)
@@ -422,10 +588,24 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
             ball->moving = 0;
             ball->x = personagem->x + personagem->width/2;
             ball->y = personagem->y - personagem->height;
+            personagem->vidas--;
+        }
+
+        if(checkBallPlayer(personagem, ball))
+        {
+            ball->facing_up_down = 1;
+            if(personagem->facing_right_left == 1)
+            {
+                ball->facing_right_left = 1;
+            }
+            else if(personagem->facing_right_left == 2)
+            {
+                ball->facing_right_left = 2;
+            }
         }
     }
 
-      
+    
 
     if(IsKeyDown(KEY_RIGHT))
     {
@@ -434,6 +614,7 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
         {
             ball->x += personagem->speed;
         }
+        personagem->facing_right_left = 1;
     }
     else if(IsKeyDown(KEY_LEFT))
     {
@@ -442,6 +623,7 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
         {
             ball->x -= personagem->speed;
         }
+        personagem->facing_right_left = 2;
     }
 
     if(personagem->x <= 0)
@@ -466,17 +648,35 @@ void blockBreaker(int *menu_opc, int *opc_jogo, Character *personagem, Screen te
         ball->moving = 1;
     }
 
-    if(personagem->lives == 0)
+    if(personagem->vidas == 0 || total_blocos == 0)
     {
-        personagem->lives = 3;
+        personagem->start = 1;
         *menu_opc = 0;
         *opc_jogo = 0;
-        // resetBlockBreaker();
     }
 
+    int blocos_vivos = 0;
+    while(aux != NULL)
+    {
+        DrawRectangle(
+            ((Block*)aux->info)->x,
+            ((Block*)aux->info)->y,
+            ((Block*)aux->info)->width,
+            ((Block*)aux->info)->height,
+            BLACK);
+
+        checkBallBlock(ball, aux, total_blocos, personagem);
+        
+        aux = aux->next;
+    }
+    
     DrawRectangle(personagem->x, personagem->y, personagem->width, personagem->height, BLACK);
     DrawCircle(ball->x, ball->y, ball->radius, RED);
+    DrawText(TextFormat("Vidas: %d", personagem->vidas), 10, tela.height-60, 30, BLACK);
+    DrawText(TextFormat("Pontuação: %d", personagem->pontos), 10, tela.height-30, 30, BLACK);
 }
+
+/* Racing */
 
 
 /* Código Principal */
@@ -493,7 +693,7 @@ int main()
         .width = 100,
         .height = 10,
         .radius = 25,
-        .lives = 3,
+        .vidas = 3,
         .speed = 10,
         .start = 1,
     };
@@ -503,6 +703,8 @@ int main()
         .x = 0,
         .y = 0,
         .speed = 5,
+        .speedX = 5,
+        .speedY = 5,
     };
 
     Enviroment ambiente = {
@@ -515,6 +717,7 @@ int main()
 
     List *scoreboard = createList();
     List *obstaculos = createList();
+    List *blocos = createList();
     Obstacle *obs1 = (Obstacle*)malloc(sizeof(Obstacle));
     obs1->height = 360;
     obs1->width = 50;
@@ -563,6 +766,8 @@ int main()
     obs6->paridade = 2;
     addEndList(obstaculos, (void*)obs6);
 
+    createBlocks(blocos);
+
     Image logo_iftm = LoadImage("assets/logoIFTM.png");
     ImageResize(&logo_iftm, 200, 200);
     Texture2D texture = LoadTextureFromImage(logo_iftm);
@@ -572,6 +777,7 @@ int main()
     int games[5];
     int menu_opc = 0;
     int opc_jogo = 0;
+    int total_blocos;
     
 
     while(!WindowShouldClose() && menu_opc != 4)
@@ -603,12 +809,12 @@ int main()
             }
             else if(opc_jogo == 3)
             {
-                /* Snake */
+                /* Racing */
             }
             else if(opc_jogo == 4)
             {
                 /* Block Breaker */
-                blockBreaker(&menu_opc, &opc_jogo, &personagem, tela, &ball);
+                blockBreaker(&menu_opc, &opc_jogo, &personagem, tela, &ball, blocos, &total_blocos);
             }
         }
         else if(menu_opc == 2)
