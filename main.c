@@ -1047,9 +1047,13 @@ int main()
     int opc_jogo = 0;
     int total_blocos;
     
+    InitAudioDevice();
+    Music music = LoadMusicStream("assets/PrayerInC_8bit.mp3");
+    PlayMusicStream(music);
 
     while(!WindowShouldClose() && menu_opc != 4)
     {
+        UpdateMusicStream(music);
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -1124,6 +1128,10 @@ int main()
 
         EndDrawing();
     }
+
+    UnloadMusicStream(music);
+    CloseAudioDevice();
+    CloseWindow();
 
     return 0;
 }
