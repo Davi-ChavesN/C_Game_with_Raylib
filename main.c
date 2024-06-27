@@ -65,7 +65,7 @@ typedef struct Obstacle
 
 typedef struct Scoreboard
 {
-    char nome[9];
+    char nome[20];
     int score;
     char jogo[50];
 }Scoreboard;
@@ -148,36 +148,36 @@ void createBlocks(List *blocos)
 int menu()
 {
     int choice = 0;
-    DrawText(TextFormat("Arcade"), 520, 50, 70, BLACK);
+    DrawText(TextFormat("Arcade"), 520, 50, 70, WHITE);
 
 
     if(opc_menu == 1)
     {
-        DrawText(TextFormat("Start"), 50, 500, 30, RED);
-        DrawText(TextFormat("Leaderboard"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Créditos"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Sair"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Start"), 50, 500, 30, GREEN);
+        DrawText(TextFormat("Leaderboard"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Créditos"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Sair"), 50, 620, 30, WHITE);
     }
     else if(opc_menu == 2)
     {
-        DrawText(TextFormat("Start"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Leaderboard"), 50, 540, 30, RED);
-        DrawText(TextFormat("Créditos"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Sair"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Start"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Leaderboard"), 50, 540, 30, GREEN);
+        DrawText(TextFormat("Créditos"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Sair"), 50, 620, 30, WHITE);
     }
     else if(opc_menu == 3)
     {
-        DrawText(TextFormat("Start"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Leaderboard"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Créditos"), 50, 580, 30, RED);
-        DrawText(TextFormat("Sair"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Start"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Leaderboard"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Créditos"), 50, 580, 30, GREEN);
+        DrawText(TextFormat("Sair"), 50, 620, 30, WHITE);
     }
     else if(opc_menu == 4)
     {
-        DrawText(TextFormat("Start"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Leaderboard"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Créditos"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Sair"), 50, 620, 30, RED);
+        DrawText(TextFormat("Start"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Leaderboard"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Créditos"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Sair"), 50, 620, 30, GREEN);
     }
 
     if(IsKeyPressed(KEY_DOWN))
@@ -212,36 +212,36 @@ int menu()
 int menuJogo()
 {
     int choice = 0;
-    DrawText(TextFormat("Jogos"), 520, 50, 70, BLACK);
+    DrawText(TextFormat("Jogos"), 520, 50, 70, WHITE);
 
 
     if(opc_menu_jogo == 1)
     {
-        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, RED);
-        DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, GREEN);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Racing"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, WHITE);
     }
     else if(opc_menu_jogo == 2)
     {
-        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Asteroids"), 50, 540, 30, RED);
-        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, GREEN);
+        DrawText(TextFormat("Racing"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, WHITE);
     }
     else if(opc_menu_jogo == 3)
     {
-        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Racing"), 50, 580, 30, RED);
-        DrawText(TextFormat("Block Breaker"), 50, 620, 30, BLACK);
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Racing"), 50, 580, 30, GREEN);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, WHITE);
     }
     else if(opc_menu_jogo == 4)
     {
-        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, BLACK);
-        DrawText(TextFormat("Asteroids"), 50, 540, 30, BLACK);
-        DrawText(TextFormat("Racing"), 50, 580, 30, BLACK);
-        DrawText(TextFormat("Block Breaker"), 50, 620, 30, RED);
+        DrawText(TextFormat("Flappy Bird"), 50, 500, 30, WHITE);
+        DrawText(TextFormat("Asteroids"), 50, 540, 30, WHITE);
+        DrawText(TextFormat("Racing"), 50, 580, 30, WHITE);
+        DrawText(TextFormat("Block Breaker"), 50, 620, 30, GREEN);
     }
 
 
@@ -1041,12 +1041,18 @@ int main()
     Texture2D texture = LoadTextureFromImage(logo_iftm);
     UnloadImage(logo_iftm);
 
+    Image wallpaper = LoadImage("assets/Arcade.png");
+    ImageResize(&wallpaper, 1280, 720);
+    Texture2D background = LoadTextureFromImage(wallpaper);
+    UnloadImage(wallpaper);
+
     srand(time(NULL));
     int games[5];
     int menu_opc = 0;
     int opc_jogo = 0;
     int total_blocos;
     
+    float timePlayed = 0.0f;
     InitAudioDevice();
     Music music = LoadMusicStream("assets/PrayerInC_8bit.mp3");
     PlayMusicStream(music);
@@ -1054,11 +1060,21 @@ int main()
     while(!WindowShouldClose() && menu_opc != 4)
     {
         UpdateMusicStream(music);
+        timePlayed = GetMusicTimePlayed(music)/GetMusicTimeLength(music);
+        if (timePlayed > 1.0f)
+        {
+            timePlayed = 1.0f;
+        }
+
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
         if(menu_opc == 0)
         {
+            DrawTexture(background, 0, 0, RAYWHITE);
+            DrawRectangle(860, 700, 400, 12, LIGHTGRAY);
+            DrawRectangle(860, 700, (int)(timePlayed*400.0f), 12, RED);
+            DrawRectangleLines(860, 700, 400, 12, GRAY);
             DrawTexture(texture, 10, 10, RAYWHITE);
             menu_opc = menu();
         }
@@ -1067,6 +1083,11 @@ int main()
         {
             if(opc_jogo == 0)
             {
+                DrawTexture(background, 0, 0, RAYWHITE);
+                DrawRectangle(860, 700, 400, 12, LIGHTGRAY);
+                DrawRectangle(860, 700, (int)(timePlayed*400.0f), 12, RED);
+                DrawRectangleLines(860, 700, 400, 12, GRAY);
+                DrawTexture(texture, 10, 10, RAYWHITE);
                 opc_jogo = menuJogo();
             }
             else if(opc_jogo == 1)
@@ -1092,13 +1113,14 @@ int main()
         }
         else if(menu_opc == 2)
         {
+            DrawTexture(background, 0, 0, RAYWHITE);
             int posy = 200;
             Node *aux = scoreboard->start;
-            DrawText(TextFormat("LeaderBoard"), 420, 50, 70, BLACK);
+            DrawText(TextFormat("LeaderBoard"), 420, 50, 70, WHITE);
 
             while(aux != NULL)
             {   
-                DrawText(TextFormat("Player - %s: %d", ((Scoreboard*)aux->info)->nome, ((Scoreboard*)aux->info)->score), 10, posy, 30, BLACK);
+                DrawText(TextFormat("Player - %s: %d", ((Scoreboard*)aux->info)->nome, ((Scoreboard*)aux->info)->score), 10, posy, 30, WHITE);
 
                 aux = aux->next;
                 posy += 40;
@@ -1111,12 +1133,13 @@ int main()
         }
         else if(menu_opc == 3)
         {
-            DrawText(TextFormat("Programa criado utilizando a biblioteca "), 10, 10, 30, BLACK);
+            DrawTexture(background, 0, 0, RAYWHITE);
+            DrawText(TextFormat("Programa criado utilizando a biblioteca "), 10, 10, 30, WHITE);
             DrawText(TextFormat("Raylib "), 620, 10, 30, BLUE);
-            DrawText(TextFormat("em linguagem "), 10, 40, 30, BLACK);
+            DrawText(TextFormat("em linguagem "), 10, 40, 30, WHITE);
             DrawText(TextFormat("C "), 210, 40, 30, BLUE);
-            DrawText(TextFormat("para a matéria de Extensão 3"), 240, 40, 30, BLACK);
-            DrawText(TextFormat("Alunos: "), 10, 100, 30, BLACK);
+            DrawText(TextFormat("para a matéria de Extensão 3"), 240, 40, 30, WHITE);
+            DrawText(TextFormat("Alunos: "), 10, 100, 30, WHITE);
             DrawText(TextFormat("Davi de Oliveira Chaves"), 10, 130, 30, BLUE);
             DrawText(TextFormat("Luiz Alberto Cury Andalécio"), 10, 160, 30, RED);
             
